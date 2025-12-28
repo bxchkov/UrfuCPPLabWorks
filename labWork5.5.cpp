@@ -1,53 +1,98 @@
 /*
 Лабораторная работа 5
 Задание 5
-Программа шифратор файлов
+Программа шифратор файлов (XOR шифрование)
 */
 
 #include <iostream>
 #include <windows.h>
 #include <fstream>
 #include <string>
+#include <cstring> // Для strlen
 
 using namespace std;
 
+// Функция шифрования/дешифрования файла методом XOR
+// inputFile - путь к исходному файлу
+// outputFile - путь к файлу результата
+// key - ключ шифрования (строка)
+// Особенность XOR: (A ^ K) ^ K = A. То есть повторное применение функции с тем же ключом расшифровывает данные.
 void encryptFile(const char* inputFile, const char* outputFile, const char* key) {
+    // Открываем файлы в бинарном режиме (ios::binary), чтобы избежать преобразования символов перевода строки
     ifstream inFile(inputFile, ios::binary);
     if (!inFile.is_open()) {
-        cerr << "Ошибка открытия входного файла" << endl;
+        cerr << "Ошибка: Не удалось открыть входной файл " << inputFile << endl;
         return;
     }
 
     ofstream outFile(outputFile, ios::binary);
     if (!outFile.is_open()) {
-        cerr << "Ошибка открытия выходного файла" << endl;
+        cerr << "Ошибка: Не удалось открыть выходной файл " << outputFile << endl;
+        inFile.close();
         return;
     }
 
     size_t keyLength = strlen(key);
+    if (keyLength == 0) {
+        cerr << "Ошибка: Ключ не может быть пустым" << endl;
+        return;
+    }
+
     size_t keyIndex = 0;
     char ch;
+
+    // Читаем файл побайтово
     while (inFile.get(ch)) {
-        ch = ch ^ key[keyIndex]; // Шифрование/Дешифрование символа
+        // Применяем операцию XOR (исключающее ИЛИ) между байтом файла и байтом ключа
+        ch = ch ^ key[keyIndex];
+
+        // Записываем результат
         outFile.put(ch);
-        keyIndex = (keyIndex + 1) % keyLength; // Переход к следующему символу ключа
+
+        // Циклический переход к следующему символу ключа
+        keyIndex = (keyIndex + 1) % keyLength;
     }
 
     inFile.close();
     outFile.close();
 
-    cout << "Шифрование/Дешифрование завершено" << endl;
+    cout << "Обработка файла " << inputFile << " -> " << outputFile << " завершена." << endl;
 }
 
 int main() {
     SetConsoleOutputCP(CP_UTF8); // Для нормального отображения русского языка в консоли
 
     const char* inputFile = "test.txt";
-    const char* outputFile = "5.5_Encoded.txt";
-    const char* key = "a";
+    const char* encryptedFile = "5.5_Encoded.txt";
+    const char* decryptedFile = "5.5_Decoded.txt";
+    const char* key = "SecretKey123"; // Более сложный ключ
 
-    encryptFile(inputFile, outputFile, key);
+    // Создадим исходный файл, если его нет
+    ifstream check(inputFile);
+    if (!check.is_open()) {
+        ofstream create(inputFile);
+        create << "Hello, World! This is a secret message.";
+        create.close();
+    } else {
+        check.close();
+    }
 
-    // Проверка правильности программы: зашифровать зашифрованный файл еще раз с тем же ключом
-    encryptFile(outputFile, "5.5_Encoded2.txt", key);
+    cout << "--- Шифрование ---" << endl;
+    encryptFile(inputFile, encryptedFile, key);
+
+    cout << endl << "--- Дешифрование (проверка) ---" << endl;
+    // Расшифровываем зашифрованный файл (применяем ту же функцию)
+    encryptFile(encryptedFile, decryptedFile, key);
+
+    // Вывод результатов для сравнения
+    cout << endl << "--- Исходный текст ---" << endl;
+    ifstream f1(inputFile); cout << f1.rdbuf() << endl; f1.close();
+
+    cout << "--- Зашифрованный текст (может содержать нечитаемые символы) ---" << endl;
+    ifstream f2(encryptedFile); cout << f2.rdbuf() << endl; f2.close();
+
+    cout << "--- Расшифрованный текст ---" << endl;
+    ifstream f3(decryptedFile); cout << f3.rdbuf() << endl; f3.close();
+
+    return 0;
 }

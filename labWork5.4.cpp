@@ -1,7 +1,9 @@
 /*
 Лабораторная работа 5
 Задание 4
-Программа, переносящая номера страницы в последнюю строку
+Программа, переносящая номера страницы в последнюю строку.
+Предполагается, что входной файл содержит текст, разделенный на страницы символом '\f' (Form Feed),
+и номер страницы может находиться в начале страницы.
 */
 
 #include <iostream>
@@ -9,68 +11,129 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <cctype> // для isdigit
 
 using namespace std;
 
-// Функция для обработки строки и извлечения номера страницы
-int extractPageNumber(string line) {
-    string number = "";
+// Функция для извлечения числа из строки (если строка содержит "Page 12", вернет 12)
+int extractPageNumber(const string& line) {
+    string numberStr = "";
     for (char c : line) {
         if (isdigit(c)) {
-            number += c;
+            numberStr += c;
         }
     }
-    return stoi(number); // Преобразование строки в целое число
+    if (numberStr.empty()) return 0;
+    return stoi(numberStr); // Преобразование строки в целое число
 }
 
 int main() {
     SetConsoleOutputCP(CP_UTF8); // Для нормального отображения русского языка в консоли
 
-    ifstream inputFile("test2.txt"); // Имя вашего входного файла
-    ofstream outputFile("test2output.txt"); // Имя вашего выходного файла
+    string inputFileName = "test2.txt";
+    string outputFileName = "test2output.txt";
+
+    ifstream inputFile(inputFileName);
+    ofstream outputFile(outputFileName);
 
     if (!inputFile.is_open()) {
-        cout << "Не получается открыть исходный файл" << endl;
-        return 1;
+        cerr << "Ошибка: Не удается открыть файл " << inputFileName << endl;
+        // Создадим тестовый файл для демонстрации
+        ofstream test(inputFileName);
+        test << "1\nHeader text\nContent line 1\nContent line 2\n\f";
+        test << "2\nHeader text page 2\nContent line 3\nContent line 4";
+        test.close();
+        cout << "Создан тестовый файл " << inputFileName << ". Перезапустите для обработки." << endl;
+        inputFile.open(inputFileName);
+        if (!inputFile.is_open()) return 1;
     }
 
     if (!outputFile.is_open()) {
-        cout << "Не получается открыть выходной файл" << endl;
+        cerr << "Ошибка: Не удается создать файл " << outputFileName << endl;
         return 1;
     }
 
     string line;
-    string pageNumber = "";
-    vector<string> pageLines;
+    string pageNumberStr = "";
+    vector<string> pageContent;
 
+    // Читаем файл построчно
     while (getline(inputFile, line)) {
-        if (line.find('\f') != string::npos) { // Проверка на управляющий символ новой страницы
-            // Если нашли символ перехода на новую страницу, обрабатываем текущую страницу
-            if (!pageNumber.empty()) {
-                for (const string& pageLine : pageLines) {
-                    outputFile << pageLine << endl;
-                }
-                outputFile << extractPageNumber(pageNumber) << endl; // Переносим номер страницы в конец
-                pageNumber = ""; // Сбрасываем значение номера страницы
-                pageLines.clear(); // Очищаем строки текущей страницы
+        // Проверяем наличие символа разрыва страницы '\f' (Form Feed, ASCII 12)
+        size_t ffPos = line.find('\f');
+
+        if (ffPos != string::npos) {
+            // Если символ найден, значит страница закончилась.
+            // Строка может содержать текст до \f и текст новой страницы после \f (редко, но возможно).
+            // Для простоты считаем, что \f разделяет страницы.
+
+            // Добавляем часть строки до \f в контент
+            string beforeFF = line.substr(0, ffPos);
+            if (!beforeFF.empty()) {
+                 // Проверка, не является ли эта строка номером страницы (если она была последней перед \f)
+                 // Но по логике задачи номер обычно вверху.
+                 // Упростим: просто добавим в контент.
+                 pageContent.push_back(beforeFF);
             }
-        } else if (!line.empty() && isdigit(line[0])) {
-            pageNumber = line; // Сохраняем номер страницы
+
+            // Записываем накопленную страницу в выходной файл
+            for (const string& contentLine : pageContent) {
+                outputFile << contentLine << endl;
+            }
+            // Если был найден номер страницы, пишем его в конце
+            if (!pageNumberStr.empty()) {
+                outputFile << extractPageNumber(pageNumberStr) << endl;
+            }
+            // Разделитель страниц в выходном файле (опционально)
+            outputFile << "-------------------- (End of Page) --------------------" << endl;
+
+            // Сброс для новой страницы
+            pageNumberStr = "";
+            pageContent.clear();
+
+            // Если после \f что-то есть, это начало новой страницы
+            string afterFF = line.substr(ffPos + 1);
+            if (!afterFF.empty()) {
+                // Проверяем, является ли это номером страницы
+                if (isdigit(afterFF[0])) {
+                    pageNumberStr = afterFF;
+                } else {
+                    pageContent.push_back(afterFF);
+                }
+            }
+
         } else {
-            pageLines.push_back(line); // Сохраняем строку текущей страницы
+            // Обычная строка
+            // Логика определения номера страницы:
+            // Если это первая строка страницы (pageContent пуст и pageNumberStr пуст) и она начинается с цифры
+            if (pageContent.empty() && pageNumberStr.empty() && !line.empty() && isdigit(line[0])) {
+                pageNumberStr = line;
+            } else {
+                pageContent.push_back(line);
+            }
         }
     }
 
-    // Обработка последней страницы (без символа перехода на новую страницу в конце)
-    if (!pageNumber.empty() && !pageLines.empty()) {
-        for (const string& pageLine : pageLines) {
-            outputFile << pageLine << endl;
+    // Записываем последнюю страницу (если файл не заканчивается на \f)
+    if (!pageContent.empty() || !pageNumberStr.empty()) {
+        for (const string& contentLine : pageContent) {
+            outputFile << contentLine << endl;
         }
-        outputFile << extractPageNumber(pageNumber) << endl;
+        if (!pageNumberStr.empty()) {
+            outputFile << extractPageNumber(pageNumberStr) << endl;
+        }
     }
 
     inputFile.close();
     outputFile.close();
 
-    cout << "Успешный успех" << endl;
+    cout << "Обработка завершена. Результат в " << outputFileName << endl;
+
+    // Вывод результата для проверки
+    ifstream res(outputFileName);
+    cout << endl << "--- Результат ---" << endl;
+    cout << res.rdbuf();
+    cout << "-----------------" << endl;
+
+    return 0;
 }

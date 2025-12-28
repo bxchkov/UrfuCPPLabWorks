@@ -1,4 +1,6 @@
 // string_class.cpp
+#define _CRT_SECURE_NO_WARNINGS // Для strcpy, strcat
+
 #include "labWork6.4_string_class.h"
 
 // Конструктор по умолчанию
@@ -24,15 +26,16 @@ MyString::MyString(const MyString& other) {
     }
 }
 
+// Конструктор с указанием размера динамической памяти
+// Выделяет память, но делает строку пустой (ставит \0 в начало)
+MyString::MyString(size_t size) {
+    str = new char[size + 1]; // +1 для нуль-терминатора
+    str[0] = '\0'; // Инициализируем как пустую строку
+}
+
 // Деструктор
 MyString::~MyString() {
     delete[] str;
-}
-
-// Конструктор с указанием размера динамической памяти
-MyString::MyString(size_t size) {
-    str = new char[size + 1];
-    str[0] = '\0'; // Обнуляем строку
 }
 
 // Оператор присваивания
@@ -66,6 +69,8 @@ MyString MyString::operator+(const MyString& other) const {
 
 // Оператор сравнения
 bool MyString::operator==(const MyString& other) const {
+    if (str == nullptr && other.str == nullptr) return true;
+    if (str == nullptr || other.str == nullptr) return false;
     return (strcmp(str, other.str) == 0);
 }
 

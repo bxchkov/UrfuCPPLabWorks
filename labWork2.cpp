@@ -4,9 +4,11 @@
 */
 
 #include <iostream>
-#include <cstdlib>
-#include <windows.h>
-#include <limits>
+#include <cstdlib> // Для rand(), srand()
+#include <windows.h> // Для SetConsoleOutputCP
+#include <limits> // Для std::numeric_limits
+#include <cmath> // Для std::abs
+#include <ctime> // Для time()
 
 using namespace std;
 
@@ -14,38 +16,46 @@ using namespace std;
 // int n;
 // cout << "Размер матрицы? (например - 5):\n";
 // cin >> n;
-const int n = 5;
+const int n = 5; // Константа размера матрицы
 
+// Функция поиска минимального элемента во всей матрице
 int findMin(int pInt[n][n], int n) {
-    int minVal = pInt[0][0];
+    int minVal = pInt[0][0]; // Предполагаем, что первый элемент - минимальный
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
             if (pInt[i][j] < minVal) {
-                minVal = pInt[i][j];
+                minVal = pInt[i][j]; // Если нашли меньше, обновляем минимум
             }
         }
     }
     return minVal;
 }
 
+// Функция поиска максимального элемента во всей матрице
 int findMax(int pInt[n][n], int n) {
-    int maxVal = pInt[0][0];
+    int maxVal = pInt[0][0]; // Предполагаем, что первый элемент - максимальный
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
             if (pInt[i][j] > maxVal) {
-                maxVal = pInt[i][j];
+                maxVal = pInt[i][j]; // Если нашли больше, обновляем максимум
             }
         }
     }
     return maxVal;
 }
 
+// Функция поиска минимума в нижней треугольной части (включая главную диагональ)
+// Нижний треугольник: элементы, где индекс строки >= индекса столбца (i >= j)
+// В текущей реализации логика перебора немного сложная (n-i), проверим корректность.
+// Обычно нижний треугольник это j <= i.
 int findMinLowerTriangle(int pInt[n][n], int n) {
-    int minVal = pInt[n-1][0]; // Инициализируем минимум первым элементом нижней строки
+    // Инициализация: берем элемент, который точно в нижнем треугольнике (левый нижний угол)
+    int minVal = pInt[n-1][0];
 
-    for (int i = n-2; i >= 0; i--) {
-        for (int j = 0; j < n - i; j++) {
-            if (pInt[i][j] < minVal) {
+    // Перебор элементов нижнего треугольника
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j <= i; j++) { // j идет от 0 до i включительно
+             if (pInt[i][j] < minVal) {
                 minVal = pInt[i][j];
             }
         }
@@ -53,11 +63,12 @@ int findMinLowerTriangle(int pInt[n][n], int n) {
     return minVal;
 }
 
+// Функция поиска максимума в нижней треугольной части
 int findMaxLowerTriangle(int pInt[n][n], int n) {
-    int maxVal = pInt[n-1][0]; // Инициализируем максимум первым элементом нижней строки
+    int maxVal = pInt[n-1][0];
 
-    for (int i = n-2; i >= 0; i--) {
-        for (int j = 0; j < n - i; j++) {
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j <= i; j++) {
             if (pInt[i][j] > maxVal) {
                 maxVal = pInt[i][j];
             }
@@ -66,11 +77,13 @@ int findMaxLowerTriangle(int pInt[n][n], int n) {
     return maxVal;
 }
 
+// Функция поиска минимума в верхней треугольной части (включая главную диагональ)
+// Верхний треугольник: элементы, где индекс строки <= индекса столбца (i <= j)
 int findMinUpperTriangle(int pInt[n][n], int n) {
-    int minVal = pInt[0][0]; // Инициализируем минимум первым элементом верхней строки
+    int minVal = pInt[0][0];
 
     for (int i = 0; i < n; i++) {
-        for (int j = i; j < n; j++) {
+        for (int j = i; j < n; j++) { // j идет от i до конца строки
             if (pInt[i][j] < minVal) {
                 minVal = pInt[i][j];
             }
@@ -79,8 +92,9 @@ int findMinUpperTriangle(int pInt[n][n], int n) {
     return minVal;
 }
 
+// Функция поиска максимума в верхней треугольной части
 int findMaxUpperTriangle(int pInt[n][n], int n) {
-    int maxVal = pInt[0][0]; // Инициализируем максимум первым элементом верхней строки
+    int maxVal = pInt[0][0];
 
     for (int i = 0; i < n; i++) {
         for (int j = i; j < n; j++) {
@@ -92,8 +106,9 @@ int findMaxUpperTriangle(int pInt[n][n], int n) {
     return maxVal;
 }
 
+// Функция поиска минимума на главной диагонали (i == j)
 int findMinDiagonal(int pInt[n][n], int n) {
-    int minVal = pInt[0][0]; // Инициализируем минимум первым элементом на главной диагонали
+    int minVal = pInt[0][0];
 
     for (int i = 1; i < n; i++) {
         if (pInt[i][i] < minVal) {
@@ -103,8 +118,9 @@ int findMinDiagonal(int pInt[n][n], int n) {
     return minVal;
 }
 
+// Функция поиска максимума на главной диагонали
 int findMaxDiagonal(int pInt[n][n], int n) {
-    int maxVal = pInt[0][0]; // Инициализируем максимум первым элементом на главной диагонали
+    int maxVal = pInt[0][0];
 
     for (int i = 1; i < n; i++) {
         if (pInt[i][i] > maxVal) {
@@ -114,10 +130,12 @@ int findMaxDiagonal(int pInt[n][n], int n) {
     return maxVal;
 }
 
+// Функция поиска минимума на побочной диагонали (i + j == n - 1)
 int findMinSecondaryDiagonal(int pInt[n][n], int n) {
-    int minVal = pInt[0][n - 1]; // Инициализируем минимум последним элементом на второстепенной диагонали
+    int minVal = pInt[0][n - 1];
 
     for (int i = 1; i < n; i++) {
+        // Элемент побочной диагонали в строке i имеет индекс столбца n - 1 - i
         if (pInt[i][n - 1 - i] < minVal) {
             minVal = pInt[i][n - 1 - i];
         }
@@ -125,8 +143,9 @@ int findMinSecondaryDiagonal(int pInt[n][n], int n) {
     return minVal;
 }
 
+// Функция поиска максимума на побочной диагонали
 int findMaxSecondaryDiagonal(int pInt[n][n], int n) {
-    int maxVal = pInt[0][n - 1]; // Инициализируем максимум последним элементом на второстепенной диагонали
+    int maxVal = pInt[0][n - 1];
 
     for (int i = 1; i < n; i++) {
         if (pInt[i][n - 1 - i] > maxVal) {
@@ -136,6 +155,7 @@ int findMaxSecondaryDiagonal(int pInt[n][n], int n) {
     return maxVal;
 }
 
+// Среднее арифметическое всех элементов
 double findAverageMatrix(int pInt[n][n], int n) {
     double sum = 0;
     int count = 0;
@@ -150,6 +170,7 @@ double findAverageMatrix(int pInt[n][n], int n) {
     return sum / count;
 }
 
+// Среднее арифметическое нижнего треугольника
 double findAverageLowerTriangle(int pInt[n][n], int n) {
     double sum = 0;
     int count = 0;
@@ -164,6 +185,7 @@ double findAverageLowerTriangle(int pInt[n][n], int n) {
     return sum / count;
 }
 
+// Среднее арифметическое верхнего треугольника
 double findAverageUpperTriangle(int pInt[n][n], int n) {
     double sum = 0;
     int count = 0;
@@ -178,6 +200,7 @@ double findAverageUpperTriangle(int pInt[n][n], int n) {
     return sum / count;
 }
 
+// Суммы элементов по строкам
 void findRowSums(int pInt[n][n], int n) {
     cout << "Суммы элементов в каждой строке матрицы:\n";
     for (int i = 0; i < n; i++) {
@@ -189,21 +212,23 @@ void findRowSums(int pInt[n][n], int n) {
     }
 }
 
+// Суммы элементов по столбцам
 void findColumnSums(int pInt[n][n], int n) {
     cout << "Суммы элементов в каждом столбце матрицы:\n";
     for (int j = 0; j < n; j++) {
         int sum = 0;
         for (int i = 0; i < n; i++) {
-            sum += pInt[i][j];
+            sum += pInt[i][j]; // Индексы: i - строка, j - столбец
         }
         cout << "Сумма элементов в столбце " << j + 1 << ": " << sum << endl;
     }
 }
 
+// Минимальные значения по строкам
 void findMinRowValues(int pInt[n][n], int n) {
     cout << "Минимальные значения в каждой строке матрицы:\n";
     for (int i = 0; i < n; i++) {
-        int minVal = std::numeric_limits<int>::max();
+        int minVal = std::numeric_limits<int>::max(); // Инициализация максимально возможным int
         for (int j = 0; j < n; j++) {
             if (pInt[i][j] < minVal) {
                 minVal = pInt[i][j];
@@ -213,10 +238,11 @@ void findMinRowValues(int pInt[n][n], int n) {
     }
 }
 
+// Максимальные значения по строкам
 void findMaxRowValues(int pInt[n][n], int n) {
     cout << "Максимальные значения в каждой строке матрицы:\n";
     for (int i = 0; i < n; i++) {
-        int maxVal = std::numeric_limits<int>::min();
+        int maxVal = std::numeric_limits<int>::min(); // Инициализация минимально возможным int
         for (int j = 0; j < n; j++) {
             if (pInt[i][j] > maxVal) {
                 maxVal = pInt[i][j];
@@ -226,6 +252,7 @@ void findMaxRowValues(int pInt[n][n], int n) {
     }
 }
 
+// Минимальные значения по столбцам
 void findMinColumnValues(int pInt[n][n], int n) {
     cout << "Минимальные значения в каждом столбце матрицы:\n";
     for (int j = 0; j < n; j++) {
@@ -239,6 +266,7 @@ void findMinColumnValues(int pInt[n][n], int n) {
     }
 }
 
+// Максимальные значения по столбцам
 void findMaxColumnValues(int pInt[n][n], int n) {
     cout << "Максимальные значения в каждом столбце матрицы:\n";
     for (int j = 0; j < n; j++) {
@@ -252,6 +280,7 @@ void findMaxColumnValues(int pInt[n][n], int n) {
     }
 }
 
+// Среднее арифметическое по строкам
 void findAverageRowValues(int pInt[n][n], int n) {
     cout << "Среднеарифметические значения в каждой строке матрицы:\n";
     for (int i = 0; i < n; i++) {
@@ -264,6 +293,7 @@ void findAverageRowValues(int pInt[n][n], int n) {
     }
 }
 
+// Среднее арифметическое по столбцам
 void findAverageColumnValues(int pInt[n][n], int n) {
     cout << "Среднеарифметические значения в каждом столбце матрицы:\n";
     for (int j = 0; j < n; j++) {
@@ -276,16 +306,17 @@ void findAverageColumnValues(int pInt[n][n], int n) {
     }
 }
 
+// Суммы треугольных частей
 void findTriangleSums(int pInt[n][n], int n) {
     int upperSum = 0;
     int lowerSum = 0;
 
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
-            if (i <= j) {
+            if (i <= j) { // Верхний треугольник
                 upperSum += pInt[i][j];
             }
-            if (i >= j) {
+            if (i >= j) { // Нижний треугольник
                 lowerSum += pInt[i][j];
             }
         }
@@ -295,6 +326,7 @@ void findTriangleSums(int pInt[n][n], int n) {
     cout << "Сумма элементов нижнетреугольной части: " << lowerSum << endl;
 }
 
+// Поиск элемента, наиболее близкого к среднему арифметическому
 int findClosestToAverage(int pInt[n][n], int n) {
     double sum = 0;
     for (int i = 0; i < n; i++) {
@@ -310,7 +342,7 @@ int findClosestToAverage(int pInt[n][n], int n) {
 
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
-            double diff = std::abs(pInt[i][j] - average);
+            double diff = std::abs(pInt[i][j] - average); // Модуль разности
             if (diff < minDiff) {
                 minDiff = diff;
                 closestElement = pInt[i][j];
@@ -324,15 +356,17 @@ int findClosestToAverage(int pInt[n][n], int n) {
 int main() {
     SetConsoleOutputCP(CP_UTF8); // Для нормального отображения русского языка в консоли
 
-    srand(time(0));
+    srand(time(0)); // Инициализация генератора случайных чисел текущим временем
 
     int matrix[n][n];
 
+    // Заполнение матрицы случайными числами
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
             int min = -10;
             int max = 10;
 
+            // Генерация числа в диапазоне [min, max]
             int randomNumber = rand() % (max - min + 1) + min;
 
             matrix[i][j] = randomNumber;
@@ -340,95 +374,67 @@ int main() {
 
     }
 
+    // Вывод матрицы
     cout << "Элементы матрицы:\n";
     for (int i = 0; i < n; ++i, cout << endl) {
         for (int j = 0; j < n; ++j) {
-            cout << matrix[i][j] << "\t";
+            cout << matrix[i][j] << "\t"; // \t - табуляция для выравнивания
         }
     }
     cout << endl;
 
-    // Нахождение минимума матрицы
+    // Вызов функций анализа матрицы
     int minMatrix = findMin(matrix, n);
     cout << "Минимум матрицы: " << minMatrix << endl;
 
-    // Нахождение максимума матрицы
     int maxMatrix = findMax(matrix, n);
     cout << "Максимум матрицы: " << maxMatrix << endl;
 
-    // Нахождение минимума в нижнетреугольной части матрицы
     int minLowerTriangle = findMinLowerTriangle(matrix, n);
     cout << "Минимум в нижнетреугольной части матрицы: " << minLowerTriangle << endl;
 
-    // Нахождение максимума в нижнетреугольной части матрицы
     int maxLowerTriangle = findMaxLowerTriangle(matrix, n);
     cout << "Максимум в нижнетреугольной части матрицы: " << maxLowerTriangle << endl;
 
-    // Нахождение минимума в верхнетреугольной части матрицы
     int minUpperTriangle = findMinUpperTriangle(matrix, n);
     cout << "Минимум в верхнетреугольной части матрицы: " << minUpperTriangle << endl;
 
-    // Нахождение максимума в верхнетреугольной части матрицы
     int maxUpperTriangle = findMaxUpperTriangle(matrix, n);
     cout << "Максимум в верхнетреугольной части матрицы: " << maxUpperTriangle << endl;
 
-    // Нахождение минимума на главной диагонали матрицы
     int minDiagonal = findMinDiagonal(matrix, n);
     cout << "Минимум на главной диагонали матрицы: " << minDiagonal << endl;
 
-    // Нахождение максимума на главной диагонали матрицы
     int maxDiagonal = findMaxDiagonal(matrix, n);
     cout << "Максимум на главной диагонали матрицы: " << maxDiagonal << endl;
 
-    // Нахождение минимума на второстепенной диагонали матрицы
     int minSecondaryDiagonal = findMinSecondaryDiagonal(matrix, n);
     cout << "Минимум на второстепенной диагонали матрицы: " << minSecondaryDiagonal << endl;
 
-    // Нахождение максимума на второстепенной диагонали матрицы
     int maxSecondaryDiagonal = findMaxSecondaryDiagonal(matrix, n);
     cout << "Максимум на второстепенной диагонали матрицы: " << maxSecondaryDiagonal << endl;
 
-    // Нахождение среднеарифметического значения элементов матрицы
     double average = findAverageMatrix(matrix, n);
     cout << "Среднеарифметическое значение элементов матрицы: " << average << endl;
 
-    // Нахождение среднеарифметического значения элементов нижнетреугольной части матрицы
     double averageLowerTriangle = findAverageLowerTriangle(matrix, n);
     cout << "Среднеарифметическое значение элементов нижнетреугольной части матрицы: " << averageLowerTriangle << endl;
 
-    // Нахождение среднеарифметического значения элементов верхнетреугольной части матрицы
     double averageUpperTriangle = findAverageUpperTriangle(matrix, n);
     cout << "Среднеарифметическое значение элементов верхнетреугольной части матрицы: " << averageUpperTriangle << endl;
 
-    // Нахождение суммы элементов в каждой строке матрицы
     findRowSums(matrix, n);
-
-    // Нахождение суммы элементов в каждом столбце матрицы
     findColumnSums(matrix, n);
-
-    // Нахождение минимальных значений в каждой строке матрицы
     findMinRowValues(matrix, n);
-
-    // Нахождение максимальных значений в каждой строке матрицы
     findMaxRowValues(matrix, n);
-
-    // Нахождение минимальных значений в каждом столбце матрицы
     findMinColumnValues(matrix, n);
-
-    // Нахождение максимальных значений в каждом столбце матрицы
     findMaxColumnValues(matrix, n);
-
-    // Нахождение среднеарифметических значений в каждой строке матрицы
     findAverageRowValues(matrix, n);
-
-    // Нахождение среднеарифметических значений в каждом столбце матрицы
     findAverageColumnValues(matrix, n);
-
-    // Нахождение суммы нижнетреугольной и верхнетреугольной частей матрицы
     findTriangleSums(matrix, n);
 
-    // Нахождение элемента, наиболее близкого к среднеарифметическому значению
     int closestElement = findClosestToAverage(matrix, n);
     cout << "Элемент, наиболее близкий к среднеарифметическому значению: " << closestElement << endl;
-}
 
+    return 0;
+}

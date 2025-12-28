@@ -5,6 +5,7 @@
 MyString::MyString() : str(nullptr) {}
 
 // Конструктор с параметром
+// Использует собственные статические методы вместо стандартных
 MyString::MyString(const char* s) {
     if (s == nullptr) {
         str = nullptr;
@@ -65,6 +66,8 @@ MyString MyString::operator+(const MyString& other) const {
 
 // Оператор сравнения
 bool MyString::operator==(const MyString& other) const {
+    if (str == nullptr && other.str == nullptr) return true;
+    if (str == nullptr || other.str == nullptr) return false;
     return MyString::stringCompare(str, other.str) == 0;
 }
 
@@ -89,9 +92,9 @@ std::istream& operator>>(std::istream& is, MyString& str) {
     return is;
 }
 
-// Кастомные функции работы со строками
+// --- Реализация статических методов (аналоги <cstring>) ---
 
-
+// Длина строки
 int MyString::stringLength(const char* str) {
     int len = 0;
     while (str[len] != '\0') {
@@ -100,59 +103,42 @@ int MyString::stringLength(const char* str) {
     return len;
 }
 
+// Копирование строки
 char* MyString::stringCopy(char* destination, const char* source) {
-    char* temp = destination; // Создаем временный указатель на начало destination
-
-    // Копируем каждый символ из source в destination, пока не достигнем конца строки
+    char* temp = destination;
     while (*source != '\0') {
         *destination = *source;
         ++destination;
         ++source;
     }
-
-    // Устанавливаем завершающий нулевой символ для destination
     *destination = '\0';
-
-    return temp; // Возвращаем указатель на начало destination
+    return temp;
 }
 
+// Сравнение строк
 int MyString::stringCompare(const char* a, const char* b) {
-    // Ищем первый различающийся символ до тех пор, пока не дойдем до конца одной из строк
     while (*a == *b && *a != '\0') {
         a++;
         b++;
     }
-
-    // если обе строки закончились, то они равны
     if (*a == '\0' && *b == '\0') {
         return 0;
     }
-
-    // тут мы сравниваем первый различающийся символ
-    if (*a > *b) {
-        return 1;
-    } else {
-        return -1;
-    }
+    // Приведение к unsigned char для корректного сравнения
+    return *(unsigned char*)a - *(unsigned char*)b;
 }
 
+// Конкатенация строк
 char* MyString::stringConcat(char* destination, const char* source) {
-    char* temp = destination; // Создаем временный указатель на начало destination
-
-    // Перемещаем указатель destination до конца строки
+    char* temp = destination;
     while (*destination != '\0') {
         ++destination;
     }
-
-    // Копируем содержимое source в конец destination, пока не достигнем завершающего нулевого символа
     while (*source != '\0') {
         *destination = *source;
         ++destination;
         ++source;
     }
-
-    // Устанавливаем завершающий нулевой символ для destination
     *destination = '\0';
-
-    return temp; // Возвращаем указатель на начало destination
+    return temp;
 }

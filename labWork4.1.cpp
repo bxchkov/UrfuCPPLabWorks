@@ -1,11 +1,13 @@
 /*
 Лабораторная работа 4
 Задание 1
-Тестирование функций для работ со строками
+Тестирование функций для работ со строками (C-style strings)
 */
 
+#define _CRT_SECURE_NO_WARNINGS // Отключаем предупреждения о небезопасных функциях в Visual Studio (strcpy, strcat)
+
 #include <iostream>
-#include <cstring>
+#include <cstring> // Заголовочный файл для функций работы со строками (strlen, strcat, strcmp, strcpy)
 #include <windows.h>
 
 using namespace std;
@@ -13,11 +15,38 @@ using namespace std;
 int main() {
     SetConsoleOutputCP(CP_UTF8); // Для нормального отображения русского языка в консоли
 
-    char str1[] = "qwerty",
-         str2[] = "1234567890";
+    // Объявление и инициализация символьных массивов (строк)
+    // Важно: размер массива str1 должен быть достаточным для конкатенации!
+    // "qwerty" (6 символов + \0) + "1234567890" (10 символов) = 17 символов.
+    // Если не задать размер явно, компилятор выделит ровно столько, сколько нужно для "qwerty" (7 байт).
+    // strcat вызовет переполнение буфера.
+    // Поэтому зададим размер с запасом.
+    char str1[50] = "qwerty";
+    char str2[] = "1234567890";
 
-    cout << strlen(str1) << endl;
-    cout << strcat(str1, str2) << endl;
-    cout << strcmp(str1, str2) << endl;
-    cout << strcpy(str1, str2) << endl;
+    cout << "str1: " << str1 << endl;
+    cout << "str2: " << str2 << endl << endl;
+
+    // 1. strlen - возвращает длину строки (количество символов до нуль-терминатора)
+    cout << "strlen(str1): " << strlen(str1) << " (длина 'qwerty')" << endl;
+
+    // 2. strcat - конкатенация (объединение) строк. Добавляет копию str2 в конец str1.
+    // Возвращает указатель на str1.
+    cout << "strcat(str1, str2): " << strcat(str1, str2) << endl;
+    cout << "Теперь str1 содержит: " << str1 << endl;
+
+    // 3. strcmp - сравнение строк лексикографически.
+    // Возвращает 0, если строки равны.
+    // < 0, если str1 меньше str2.
+    // > 0, если str1 больше str2.
+    // Сейчас str1 = "qwerty1234567890", str2 = "1234567890"
+    // 'q' (код 113) > '1' (код 49), поэтому результат будет > 0.
+    cout << "strcmp(str1, str2): " << strcmp(str1, str2) << endl;
+
+    // 4. strcpy - копирование строки. Копирует содержимое str2 в str1 (включая \0).
+    // Предыдущее содержимое str1 затирается.
+    cout << "strcpy(str1, str2): " << strcpy(str1, str2) << endl;
+    cout << "Теперь str1 содержит: " << str1 << endl;
+
+    return 0;
 }
